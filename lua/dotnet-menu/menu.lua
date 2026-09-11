@@ -1,15 +1,16 @@
 -- The floating menu window every dotnet action is reached from.
 --
 -- Deliberately NOT vim.ui.select: that often hands the list to a fuzzy picker
--- (telescope, fzf-lua…) and turns a short, hand-ordered menu into a search box. Here each entry
--- owns a mnemonic key, the order is meaningful, and the window is small enough
--- to read at a glance — which is the whole point of a menu over a picker.
+-- (telescope, fzf-lua…) and turns a short, hand-ordered menu into a search
+-- box. Here each entry owns a mnemonic key, the order is meaningful, and the
+-- window is small enough to read at a glance — which is the whole point of a
+-- menu over a picker.
 
 local M = {}
 
 local ns = vim.api.nvim_create_namespace("dotnet_menu")
 
--- Layout of one entry line: "  s  Nouvelle solution"
+-- Layout of one entry line: "  s  New solution"
 local PAD = "  "
 local GAP = "  "
 
@@ -17,9 +18,10 @@ local GAP = "  "
 -- `:colorscheme` clears every group — including these. Linked, with
 -- default = true, so a theme that ships its own DotnetMenu* groups wins.
 --
--- The float is backed by Pmenu, not NormalFloat: catppuccin runs with
--- transparent_background here, which would drop the menu text straight onto the
--- buffer underneath. PmenuSel is then the matching cursorline.
+-- The float is backed by Pmenu, not NormalFloat: with a transparent
+-- colorscheme (catppuccin's transparent_background, say) NormalFloat has no
+-- background, which would drop the menu text straight onto the buffer
+-- underneath. PmenuSel is then the matching cursorline.
 local function set_highlights()
     vim.api.nvim_set_hl(0, "DotnetMenuNormal", { link = "Pmenu", default = true })
     vim.api.nvim_set_hl(0, "DotnetMenuBorder", { link = "FloatBorder", default = true })
@@ -62,8 +64,9 @@ function M.open(opts)
         return
     end
 
-    -- strdisplaywidth, not #: the labels carry accented characters, whose byte
-    -- length is not their column count.
+    -- strdisplaywidth, not #: labels can carry non-ASCII characters (the "→"
+    -- of a reference, a project or package name), whose byte length is not
+    -- their column count.
     local width = vim.fn.strdisplaywidth(opts.title) + 4
     for _, line in ipairs(lines) do
         width = math.max(width, vim.fn.strdisplaywidth(line) + #PAD)

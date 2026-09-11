@@ -45,7 +45,7 @@ function M.run(args, opts, on_success)
     -- vim.system raises on a missing executable, which would surface as a Lua
     -- stack trace rather than something actionable.
     if vim.fn.executable("dotnet") ~= 1 then
-        notify("`dotnet` introuvable dans le PATH", vim.log.levels.ERROR)
+        notify("`dotnet` not found on the PATH", vim.log.levels.ERROR)
         return
     end
 
@@ -74,7 +74,7 @@ function M.run(args, opts, on_success)
                     message = #errors > 0 and table.concat(errors, "\n") or clean(result.stdout)
                 end
                 if message == "" then
-                    message = ("`%s` a échoué (code %d)"):format(table.concat(cmd, " "), result.code)
+                    message = ("`%s` failed (exit code %d)"):format(table.concat(cmd, " "), result.code)
                 end
                 notify(message, vim.log.levels.ERROR)
                 return
@@ -107,7 +107,7 @@ function M.run(args, opts, on_success)
                 shown = stdout:match("^[^\n]*") or ""
             end
 
-            notify(shown ~= "" and shown or (opts.label .. " : OK"), vim.log.levels.INFO)
+            notify(shown ~= "" and shown or (opts.label .. ": OK"), vim.log.levels.INFO)
 
             if on_success then
                 on_success(stdout)
@@ -129,7 +129,7 @@ end
 --- @param on_output fun(stdout: string)
 function M.capture(args, opts, on_output)
     if vim.fn.executable("dotnet") ~= 1 then
-        notify("`dotnet` introuvable dans le PATH", vim.log.levels.ERROR)
+        notify("`dotnet` not found on the PATH", vim.log.levels.ERROR)
         return
     end
 
@@ -137,7 +137,7 @@ function M.capture(args, opts, on_output)
         vim.schedule(function()
             if result.code ~= 0 then
                 local message = clean(result.stderr)
-                notify(opts.label .. " : " .. (message ~= "" and message or "échec"), vim.log.levels.ERROR)
+                notify(opts.label .. ": " .. (message ~= "" and message or "failed"), vim.log.levels.ERROR)
                 return
             end
             on_output(result.stdout or "")

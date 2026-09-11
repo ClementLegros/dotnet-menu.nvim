@@ -116,7 +116,7 @@ function M.new_solution()
     -- The target directory goes in the prompt itself rather than in a second
     -- question: where the file lands is visible BEFORE anything is typed, and
     -- the flow stays at two steps.
-    vim.ui.input({ prompt = "Nouvelle solution dans " .. vim.fn.fnamemodify(dir, ":~") .. " : " }, function(input)
+    vim.ui.input({ prompt = "New solution in " .. vim.fn.fnamemodify(dir, ":~") .. ": " }, function(input)
         if not input then
             return -- cancelled with <Esc>
         end
@@ -129,7 +129,7 @@ function M.new_solution()
         local function create(format)
             cli.run({ "new", "sln", "--name", name, "--format", format }, {
                 cwd = dir,
-                label = "Création de " .. name .. "." .. format,
+                label = "Creating " .. name .. "." .. format,
             }, function()
                 reveal(dir)
             end)
@@ -144,14 +144,14 @@ function M.new_solution()
                 items = {
                     {
                         key = "x",
-                        label = name .. ".slnx   (XML, défaut du SDK)",
+                        label = name .. ".slnx   (XML, SDK default)",
                         handler = function()
                             create("slnx")
                         end,
                     },
                     {
                         key = "s",
-                        label = name .. ".sln    (format classique)",
+                        label = name .. ".sln    (classic format)",
                         handler = function()
                             create("sln")
                         end,
@@ -195,13 +195,13 @@ local function add_to_solution(base, project_dir, done)
 
     cli.run({ "sln", vim.fs.basename(solution), "add", project }, {
         cwd = base,
-        label = "Ajout à " .. vim.fs.basename(solution),
+        label = "Adding to " .. vim.fs.basename(solution),
     }, done)
 end
 
 --- Ask where the project goes, create it, then hand it to the solution.
 local function create_project(short, base)
-    local prompt = ("Nouveau projet (%s) dans %s : "):format(short, vim.fn.fnamemodify(base, ":~"))
+    local prompt = ("New project (%s) in %s: "):format(short, vim.fn.fnamemodify(base, ":~"))
 
     vim.ui.input({ prompt = prompt }, function(input)
         if not input then
@@ -221,7 +221,7 @@ local function create_project(short, base)
 
         cli.run({ "new", short, "--name", name, "--output", rel }, {
             cwd = base,
-            label = ("Création de %s (%s)"):format(rel, short),
+            label = ("Creating %s (%s)"):format(rel, short),
         }, function()
             local dir = base .. "/" .. rel
             add_to_solution(base, dir, function()
@@ -236,7 +236,7 @@ end
 local function browse_templates(base)
     templates.list(base, function(list)
         if #list == 0 then
-            vim.notify("Aucun template de projet trouvé", vim.log.levels.WARN, { title = ".NET" })
+            vim.notify("No project template found", vim.log.levels.WARN, { title = ".NET" })
             return
         end
 
@@ -279,13 +279,13 @@ function M.new_project()
     table.insert(items, { separator = true })
     table.insert(items, {
         key = "t",
-        label = "Tous les templates…",
+        label = "All templates…",
         handler = function()
             browse_templates(base)
         end,
     })
 
-    menu.open({ title = "Nouveau projet", items = items })
+    menu.open({ title = "New project", items = items })
 end
 
 --- Run `cb` with a solution, asking which one when the choice is real.
@@ -299,7 +299,7 @@ local function with_solution(cb)
 
     if #solutions == 0 then
         vim.notify(
-            "Aucune solution trouvée en remontant depuis ce buffer",
+            "No solution found above this buffer",
             vim.log.levels.WARN,
             { title = ".NET" }
         )
@@ -320,7 +320,7 @@ local function with_solution(cb)
         })
     end
 
-    menu.open({ title = "Quelle solution ?", items = items })
+    menu.open({ title = "Which solution?", items = items })
 end
 
 --- Add existing projects to the solution in ONE `dotnet sln add` call, which
@@ -332,7 +332,7 @@ local function register(root, solution, projects)
 
     cli.run(args, {
         cwd = root,
-        label = ("Ajout de %d projet%s à %s"):format(
+        label = ("Adding %d project%s to %s"):format(
             #projects,
             #projects > 1 and "s" or "",
             vim.fs.basename(solution)
@@ -366,8 +366,8 @@ function M.add_projects()
             -- the same empty menu, and they call for opposite next moves.
             if #missing == 0 then
                 local message = #referenced > 0
-                        and ("Tous les projets sont déjà dans %s"):format(vim.fs.basename(solution))
-                    or ("Aucun projet trouvé sous %s"):format(vim.fn.fnamemodify(root, ":~"))
+                        and ("All projects are already in %s"):format(vim.fs.basename(solution))
+                    or ("No project found under %s"):format(vim.fn.fnamemodify(root, ":~"))
                 vim.notify(message, vim.log.levels.INFO, { title = ".NET" })
                 return
             end
@@ -379,7 +379,7 @@ function M.add_projects()
             if #missing > 1 then
                 table.insert(items, {
                     key = "a",
-                    label = ("Tout ajouter (%d)"):format(#missing),
+                    label = ("Add all (%d)"):format(#missing),
                     handler = function()
                         register(root, solution, missing)
                     end,
@@ -396,7 +396,7 @@ function M.add_projects()
                 })
             end
 
-            menu.open({ title = "Ajouter à " .. vim.fs.basename(solution), items = items })
+            menu.open({ title = "Add to " .. vim.fs.basename(solution), items = items })
         end)
     end)
 end
@@ -418,14 +418,14 @@ local KINDS = {
 
 --- Ask for a name, work out the namespace, write the file, open it.
 local function create_file(keyword, base)
-    local prompt = ("Nouveau %s dans %s : "):format(keyword, vim.fn.fnamemodify(base, ":~"))
+    local prompt = ("New %s in %s: "):format(keyword, vim.fn.fnamemodify(base, ":~"))
 
     vim.ui.input({ prompt = prompt }, function(input)
         if not input then
             return
         end
 
-        -- A path again, as in "Nouveau projet": "Services/Billing/Invoice"
+        -- A path again, as in "New project": "Services/Billing/Invoice"
         -- creates the folders and puts Invoice.cs at the bottom of them. The
         -- extension is stripped so typing "Invoice.cs" cannot yield Invoice.cs.cs.
         local rel = (vim.trim(input):gsub("%.cs$", ""))
@@ -439,7 +439,7 @@ local function create_file(keyword, base)
 
         if vim.fn.filereadable(path) == 1 then
             vim.notify(
-                ("%s existe déjà"):format(vim.fn.fnamemodify(path, ":~:.")),
+                ("%s already exists"):format(vim.fn.fnamemodify(path, ":~:.")),
                 vim.log.levels.ERROR,
                 { title = ".NET" }
             )
@@ -447,7 +447,7 @@ local function create_file(keyword, base)
         end
 
         if vim.fn.isdirectory(dir) == 0 and vim.fn.mkdir(dir, "p") == 0 then
-            vim.notify("Impossible de créer " .. dir, vim.log.levels.ERROR, { title = ".NET" })
+            vim.notify("Cannot create " .. dir, vim.log.levels.ERROR, { title = ".NET" })
             return
         end
 
@@ -457,7 +457,7 @@ local function create_file(keyword, base)
         local namespace = context.namespace_for(dir)
         if not namespace then
             vim.notify(
-                "Aucun projet trouvé : fichier créé sans namespace",
+                "No project found: file created without a namespace",
                 vim.log.levels.WARN,
                 { title = ".NET" }
             )
@@ -466,7 +466,7 @@ local function create_file(keyword, base)
         local lines, cursor = csharp.scaffold(keyword, name, namespace)
         local ok, err = pcall(vim.fn.writefile, lines, path)
         if not ok then
-            vim.notify("Écriture impossible : " .. tostring(err), vim.log.levels.ERROR, { title = ".NET" })
+            vim.notify("Cannot write the file: " .. tostring(err), vim.log.levels.ERROR, { title = ".NET" })
             return
         end
 
@@ -475,9 +475,9 @@ local function create_file(keyword, base)
         refresh_oil(dir)
 
         vim.notify(
-            ("%s créé%s"):format(
+            ("%s created%s"):format(
                 vim.fn.fnamemodify(path, ":~:."),
-                namespace and (" dans " .. namespace) or ""
+                namespace and (" in " .. namespace) or ""
             ),
             vim.log.levels.INFO,
             { title = ".NET" }
@@ -500,7 +500,7 @@ function M.new_file()
         })
     end
 
-    menu.open({ title = "Nouveau fichier", items = items })
+    menu.open({ title = "New file", items = items })
 end
 
 --- "Invoice" for .../Invoice.cs
@@ -520,7 +520,7 @@ local function move_file(path, new_path)
     local ok, err = pcall(vim.lsp.util.rename, path, new_path)
     if not ok or not vim.uv.fs_stat(new_path) then
         vim.notify(
-            ("Impossible de renommer %s : %s"):format(vim.fs.basename(path), tostring(err or "?")),
+            ("Cannot rename %s: %s"):format(vim.fs.basename(path), tostring(err or "?")),
             vim.log.levels.ERROR,
             { title = ".NET" }
         )
@@ -565,14 +565,14 @@ local function rename_and_move(client, bufnr, path, new_path)
     end
 
     vim.notify(
-        ("%s.cs déplacé dans %s"):format(new, vim.fn.fnamemodify(new_dir, ":~:.")),
+        ("%s.cs moved to %s"):format(new, vim.fn.fnamemodify(new_dir, ":~:.")),
         vim.log.levels.INFO,
         { title = ".NET" }
     )
 
     local namespace = context.namespace_for(new_dir)
     if not namespace then
-        vim.notify("Hors de tout projet : namespace inchangé", vim.log.levels.WARN, { title = ".NET" })
+        vim.notify("Outside any project: namespace unchanged", vim.log.levels.WARN, { title = ".NET" })
         return
     end
 
@@ -593,7 +593,7 @@ function M.rename_file()
     local path = context.current_file()
     if not path or not path:match("%.cs$") then
         vim.notify(
-            "Renommer : ouvre un fichier .cs, ou place le curseur dessus dans oil",
+            "Rename: open a .cs file, or put the cursor on one in oil",
             vim.log.levels.WARN,
             { title = ".NET" }
         )
@@ -603,7 +603,7 @@ function M.rename_file()
     local old = stem(path)
     local dir = vim.fs.dirname(path)
 
-    vim.ui.input({ prompt = ("Renommer / déplacer %s.cs vers : "):format(old), default = old }, function(input)
+    vim.ui.input({ prompt = ("Rename / move %s.cs to: "):format(old), default = old }, function(input)
         if not input then
             return
         end
@@ -626,7 +626,7 @@ function M.rename_file()
         -- rename would leave the code renamed and the file not.
         if vim.uv.fs_stat(new_path) then
             vim.notify(
-                vim.fn.fnamemodify(new_path, ":~:.") .. " existe déjà",
+                vim.fn.fnamemodify(new_path, ":~:.") .. " already exists",
                 vim.log.levels.ERROR,
                 { title = ".NET" }
             )
@@ -666,7 +666,7 @@ local function with_project(cb)
     local found = context.projects(root)
 
     if #found == 0 then
-        vim.notify("Aucun projet trouvé", vim.log.levels.WARN, { title = ".NET" })
+        vim.notify("No project found", vim.log.levels.WARN, { title = ".NET" })
         return
     end
 
@@ -680,7 +680,7 @@ local function with_project(cb)
         })
     end
 
-    menu.open({ title = "Quel projet ?", items = items })
+    menu.open({ title = "Which project?", items = items })
 end
 
 local function project_name(path)
@@ -711,10 +711,10 @@ function M.add_reference()
 
         if #candidates == 0 then
             local detail = cyclic > 0
-                    and (" (%d écarté%s : cycle de références)"):format(cyclic, cyclic > 1 and "s" or "")
+                    and (" (%d left out: would create a reference cycle)"):format(cyclic)
                 or ""
             vim.notify(
-                ("Aucun projet à référencer depuis %s%s"):format(project_name(source), detail),
+                ("No project to reference from %s%s"):format(project_name(source), detail),
                 vim.log.levels.INFO,
                 { title = ".NET" }
             )
@@ -738,7 +738,7 @@ function M.add_reference()
             })
         end
 
-        menu.open({ title = "Référence pour " .. project_name(source), items = items })
+        menu.open({ title = "Reference for " .. project_name(source), items = items })
     end)
 end
 
@@ -759,7 +759,7 @@ end
 --- Search NuGet, then add the chosen package.
 function M.add_package()
     with_project(function(target)
-        local prompt = ("Package NuGet pour %s : "):format(project_name(target))
+        local prompt = ("NuGet package for %s: "):format(project_name(target))
 
         vim.ui.input({ prompt = prompt }, function(input)
             if not input then
@@ -773,17 +773,17 @@ function M.add_package()
 
             -- capture() is silent, and this one goes over the network: without a
             -- word here the editor would just sit there for a second or two.
-            vim.notify("Recherche de « " .. term .. " » sur NuGet…", vim.log.levels.INFO, { title = ".NET" })
+            vim.notify('Searching NuGet for "' .. term .. '"…', vim.log.levels.INFO, { title = ".NET" })
 
             -- --format json rather than the default table: the SDK gives
             -- structured results, so there is no column layout to guess at.
             cli.capture({ "package", "search", term, "--take", "20", "--format", "json" }, {
                 cwd = vim.fs.dirname(target),
-                label = "Recherche NuGet",
+                label = "NuGet search",
             }, function(stdout)
                 local ok, data = pcall(vim.json.decode, stdout)
                 if not ok or type(data) ~= "table" then
-                    vim.notify("Réponse NuGet illisible", vim.log.levels.ERROR, { title = ".NET" })
+                    vim.notify("Unreadable NuGet response", vim.log.levels.ERROR, { title = ".NET" })
                     return
                 end
 
@@ -799,7 +799,7 @@ function M.add_package()
                             handler = function()
                                 cli.run({ "add", target, "package", package.id }, {
                                     cwd = vim.fs.dirname(target),
-                                    label = ("Ajout de %s à %s"):format(package.id, project_name(target)),
+                                    label = ("Adding %s to %s"):format(package.id, project_name(target)),
                                     -- The resolved version is read back from the
                                     -- output rather than taken from the search
                                     -- result: NuGet reports the latest version,
@@ -808,7 +808,7 @@ function M.add_package()
                                     -- those differ often enough to matter.
                                     success = function(stdout)
                                         local version = stdout:match("version '([^']+)' added")
-                                        return ("%s%s ajouté à %s"):format(
+                                        return ("%s%s added to %s"):format(
                                             package.id,
                                             version and (" " .. version) or "",
                                             project_name(target)
@@ -827,11 +827,11 @@ function M.add_package()
                 end
 
                 if #items == 0 then
-                    vim.notify("Aucun package pour « " .. term .. " »", vim.log.levels.WARN, { title = ".NET" })
+                    vim.notify('No package for "' .. term .. '"', vim.log.levels.WARN, { title = ".NET" })
                     return
                 end
 
-                menu.open({ title = "NuGet : " .. term, items = items })
+                menu.open({ title = "NuGet: " .. term, items = items })
             end)
         end)
     end)

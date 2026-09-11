@@ -67,7 +67,7 @@ end
 function M.list(cwd, on_list)
     cli.capture({ "new", "list", "--type", "project", "-lang", "C#" }, {
         cwd = cwd,
-        label = "Liste des templates",
+        label = "Listing templates",
     }, function(stdout)
         on_list(M.parse(stdout))
     end)

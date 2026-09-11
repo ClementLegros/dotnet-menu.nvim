@@ -35,15 +35,15 @@ function M.open()
     menu.open({
         title = ".NET",
         items = {
-            { key = "s", label = "Nouvelle solution", handler = actions.new_solution },
-            { key = "p", label = "Nouveau projet", handler = actions.new_project },
-            { key = "a", label = "Ajouter au .sln", handler = actions.add_projects },
-            { key = "f", label = "Nouveau fichier", handler = actions.new_file },
-            { key = "R", label = "Renommer / déplacer le fichier", handler = actions.rename_file },
-            { key = "r", label = "Référence projet", handler = actions.add_reference },
-            { key = "n", label = "Package NuGet", handler = actions.add_package },
+            { key = "s", label = "New solution", handler = actions.new_solution },
+            { key = "p", label = "New project", handler = actions.new_project },
+            { key = "a", label = "Add to solution", handler = actions.add_projects },
+            { key = "f", label = "New file", handler = actions.new_file },
+            { key = "R", label = "Rename / move file", handler = actions.rename_file },
+            { key = "r", label = "Project reference", handler = actions.add_reference },
+            { key = "n", label = "NuGet package", handler = actions.add_package },
             { separator = true },
-            { key = "q", label = "Fermer", handler = nil },
+            { key = "q", label = "Close", handler = nil },
         },
     })
 end

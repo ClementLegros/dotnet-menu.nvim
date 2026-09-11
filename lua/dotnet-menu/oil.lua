@@ -2,11 +2,11 @@
 -- only way in. Editing an oil buffer and saving it creates, renames, moves and
 -- deletes files; each of those has a C# consequence:
 --
---   create  Invoice.cs   an empty file is filled in, as the menu's "Nouveau
---                        fichier" would: namespace from the folders, then
+--   create  Invoice.cs   an empty file is filled in, as the menu's "New
+--                        file" would: namespace from the folders, then
 --                        `public class Invoice` (interface for IInvoice).
 --   rename  Foo -> Bar   the type Foo is renamed to Bar across the solution,
---                        as the menu's "Renommer" does. oil alone would only
+--                        as the menu's "Rename" does. oil alone would only
 --                        move the file: roslyn_ls declares willRenameFiles for
 --                        **/*.razor only (measured on 5.12.0).
 --   move    Foo.cs into  the namespace follows the folder, through roslyn's
@@ -112,11 +112,11 @@ local function before_move(action)
 
     local client = roslyn.client_for(src)
     if not client then
-        notify(("roslyn_ls ne tourne pas : %s.cs renommé sans son type"):format(old), vim.log.levels.WARN)
+        notify(("roslyn_ls is not running: %s.cs renamed without its type"):format(old), vim.log.levels.WARN)
         return
     end
     if not roslyn.wait_ready(client, RENAME_WAIT_MS) then
-        notify(("roslyn_ls n'a pas fini de charger la solution : type %s non renommé"):format(old), vim.log.levels.ERROR)
+        notify(("roslyn_ls has not finished loading the solution: type %s not renamed"):format(old), vim.log.levels.ERROR)
         return
     end
 
@@ -138,7 +138,7 @@ local function before_move(action)
             csharp.report_rename(old, new, result)
         end,
         failed = result.renamed and function()
-            notify(("Le type %s a été renommé en %s, mais oil n'a pas renommé le fichier"):format(old, new), vim.log.levels.ERROR)
+            notify(("Type %s was renamed to %s, but oil did not rename the file"):format(old, new), vim.log.levels.ERROR)
         end or nil,
     })
 end
@@ -169,7 +169,7 @@ local function before_delete(action)
         table.insert(queued, {
             ok = function()
                 notify(
-                    ("%s.cs supprimé, mais %s est encore utilisé dans : %s"):format(name, name, table.concat(names, ", ")),
+                    ("%s.cs deleted, but %s is still used in: %s"):format(name, name, table.concat(names, ", ")),
                     vim.log.levels.WARN
                 )
             end,
@@ -223,7 +223,7 @@ local function after_create(action)
     if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
         vim.cmd("checktime " .. bufnr)
     end
-    return ("%s.cs : %s %s dans %s"):format(name, keyword, name, namespace)
+    return ("%s.cs: %s %s in %s"):format(name, keyword, name, namespace)
 end
 
 --- Fix the namespace of each moved file, one after the other: each waits for
@@ -239,11 +239,11 @@ local function sync_moved(list)
     local client = roslyn.client_for(item.path)
 
     if not namespace then
-        notify(("%s est hors de tout projet : namespace inchangé"):format(file), vim.log.levels.WARN)
+        notify(("%s is outside any project: namespace unchanged"):format(file), vim.log.levels.WARN)
         return sync_moved(list)
     end
     if not client then
-        notify(("roslyn_ls ne tourne pas : namespace de %s non mis à jour"):format(file), vim.log.levels.WARN)
+        notify(("roslyn_ls is not running: namespace of %s not updated"):format(file), vim.log.levels.WARN)
         return sync_moved(list)
     end
 
@@ -320,7 +320,7 @@ local function guarded(fn)
     return function(args)
         local ok, err = pcall(fn, args.data)
         if not ok then
-            notify("Hook oil : " .. tostring(err), vim.log.levels.ERROR)
+            notify("oil hook: " .. tostring(err), vim.log.levels.ERROR)
         end
     end
 end

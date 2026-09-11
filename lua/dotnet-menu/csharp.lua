@@ -96,10 +96,10 @@ end
 local function request(client, bufnr, method, params)
     local response, err = client:request_sync(method, params, TIMEOUT_MS, bufnr)
     if not response then
-        return nil, ("roslyn_ls : %s (%s)"):format(err or "pas de réponse", method)
+        return nil, ("roslyn_ls: %s (%s)"):format(err or "no response", method)
     end
     if response.err then
-        return nil, "roslyn_ls : " .. response.err.message
+        return nil, "roslyn_ls: " .. response.err.message
     end
     return response.result, nil
 end
@@ -215,7 +215,7 @@ function M.rename_type(client, bufnr, old, new)
     -- An invalid identifier is refused WITHOUT an error: measured, "2Bad" comes
     -- back as a null result. Nothing has changed at this point.
     if not edit then
-        return nil, ("roslyn_ls refuse de renommer %s en %s (nom de type C# invalide ?)"):format(old, new)
+        return nil, ("roslyn_ls refused to rename %s to %s (invalid C# type name?)"):format(old, new)
     end
 
     local written, pending = apply_and_save(client, edit, bufnr, before)
@@ -298,7 +298,7 @@ function M.sync_namespace(client, bufnr, previous, namespace, cb)
 
     local function attempt()
         if not vim.api.nvim_buf_is_valid(bufnr) then
-            return cb(nil, "buffer fermé avant la mise à jour du namespace")
+            return cb(nil, "buffer closed before the namespace was updated")
         end
 
         client:request("textDocument/codeAction", params, function(action_err, actions)
@@ -307,14 +307,14 @@ function M.sync_namespace(client, bufnr, previous, namespace, cb)
                 if vim.uv.now() < deadline then
                     vim.defer_fn(attempt, SYNC_POLL_MS)
                 else
-                    cb(nil, ("roslyn_ls n'a pas proposé de passer %s en %s"):format(declaration.name, namespace))
+                    cb(nil, ("roslyn_ls did not offer to change %s to %s"):format(declaration.name, namespace))
                 end
                 return
             end
 
             local resolved, resolve_err = request(client, bufnr, "codeAction/resolve", action)
             if resolve_err or not (resolved and resolved.edit) then
-                return cb(nil, resolve_err or "roslyn_ls : action sans modification")
+                return cb(nil, resolve_err or "roslyn_ls: the action carries no edit")
             end
 
             local written, pending = apply_and_save(client, resolved.edit, bufnr, snapshot())
@@ -329,7 +329,7 @@ end
 function M.report_namespace(file, result)
     if result.kept then
         vim.notify(
-            ("%s : namespace %s conservé (il ne suivait pas les dossiers)"):format(file, result.kept),
+            ("%s: namespace %s kept (it did not follow the folders)"):format(file, result.kept),
             vim.log.levels.INFO,
             { title = TITLE }
         )
@@ -338,7 +338,7 @@ function M.report_namespace(file, result)
         return
     end
     vim.notify(
-        ("%s : namespace %s → %s (%d fichier%s)"):format(
+        ("%s: namespace %s → %s (%d file%s)"):format(
             file,
             result.from,
             result.to,
@@ -350,7 +350,7 @@ function M.report_namespace(file, result)
     )
     if #result.pending > 0 then
         vim.notify(
-            "Modifiés mais NON enregistrés (changements en cours) : " .. table.concat(result.pending, ", "),
+            "Changed but NOT saved (they had unsaved edits): " .. table.concat(result.pending, ", "),
             vim.log.levels.WARN,
             { title = TITLE }
         )
@@ -395,7 +395,7 @@ end
 function M.report_rename(old, new, result)
     if not result.renamed then
         vim.notify(
-            ("%s.cs → %s.cs (aucun type %s dans le fichier : seul le fichier est renommé)"):format(old, new, old),
+            ("%s.cs → %s.cs (no type %s in the file: only the file was renamed)"):format(old, new, old),
             vim.log.levels.INFO,
             { title = TITLE }
         )
@@ -403,7 +403,7 @@ function M.report_rename(old, new, result)
     end
 
     vim.notify(
-        ("%s.cs → %s.cs, type %s renommé dans %d fichier%s"):format(
+        ("%s.cs → %s.cs, type %s renamed in %d file%s"):format(
             old,
             new,
             new,
@@ -415,7 +415,7 @@ function M.report_rename(old, new, result)
     )
     if #result.pending > 0 then
         vim.notify(
-            "Modifiés mais NON enregistrés (changements en cours) : " .. table.concat(result.pending, ", "),
+            "Changed but NOT saved (they had unsaved edits): " .. table.concat(result.pending, ", "),
             vim.log.levels.WARN,
             { title = TITLE }
         )

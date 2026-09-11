@@ -109,7 +109,7 @@ function M.wait_ready(client, timeout_ms)
     if ready[client.id] then
         return true
     end
-    vim.notify("En attente du chargement de la solution par roslyn_ls…", vim.log.levels.INFO, { title = ".NET" })
+    vim.notify("Waiting for roslyn_ls to load the solution…", vim.log.levels.INFO, { title = ".NET" })
     return vim.wait(timeout_ms, function()
         return ready[client.id] == true
     end, POLL_MS)
@@ -137,12 +137,12 @@ function M.when_ready(bufnr, cb)
         end
 
         if not client and elapsed > ATTACH_TIMEOUT_MS then
-            vim.notify("roslyn_ls n'est pas attaché à ce fichier", vim.log.levels.ERROR, { title = ".NET" })
+            vim.notify("roslyn_ls is not attached to this file", vim.log.levels.ERROR, { title = ".NET" })
             return
         end
 
         if elapsed > LOAD_TIMEOUT_MS then
-            vim.notify("roslyn_ls n'a pas fini de charger la solution", vim.log.levels.ERROR, { title = ".NET" })
+            vim.notify("roslyn_ls has not finished loading the solution", vim.log.levels.ERROR, { title = ".NET" })
             return
         end
 
@@ -151,7 +151,7 @@ function M.when_ready(bufnr, cb)
         -- loaded long ago (measured: ~0.3s), which is not worth a message.
         if not announced and elapsed > ANNOUNCE_AFTER_MS then
             announced = true
-            vim.notify("En attente du chargement de la solution par roslyn_ls…", vim.log.levels.INFO, { title = ".NET" })
+            vim.notify("Waiting for roslyn_ls to load the solution…", vim.log.levels.INFO, { title = ".NET" })
         end
 
         vim.defer_fn(poll, POLL_MS)

@@ -47,7 +47,7 @@ end
 function M.projects(solution, on_list)
     cli.capture({ "sln", vim.fs.basename(solution), "list" }, {
         cwd = vim.fs.dirname(solution),
-        label = "Lecture de " .. vim.fs.basename(solution),
+        label = "Reading " .. vim.fs.basename(solution),
     }, function(stdout)
         on_list(M.parse(stdout))
     end)

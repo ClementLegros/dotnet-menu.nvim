@@ -8,8 +8,6 @@ With [oil.nvim](https://github.com/stevearc/oil.nvim), the same actions run
 directly when you create, rename, move or delete a `.cs` file in oil — no menu
 needed.
 
-The user interface (menu, prompts, notifications) is in French.
-
 ![dotnet-menu.nvim demo: new file from the menu, then create, rename, move and delete in oil](demo/demo.gif)
 
 ## Requirements
