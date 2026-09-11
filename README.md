@@ -10,6 +10,8 @@ needed.
 
 The user interface (menu, prompts, notifications) is in French.
 
+![dotnet-menu.nvim demo: new file from the menu, then create, rename, move and delete in oil](demo/demo.gif)
+
 ## Requirements
 
 - **Neovim ≥ 0.11** (developed and tested on 0.12).
@@ -159,6 +161,18 @@ session. The stale entries are dropped before each refresh.
 - Moving a whole **folder** does not update the namespaces of the files inside
   it.
 - Copying a `.cs` file in oil does not rename the type in the copy.
+
+## Demo
+
+The GIF above is recorded with [VHS](https://github.com/charmbracelet/vhs) from
+`demo/demo.tape`, on a sample solution created by `demo/setup.sh`:
+
+```sh
+demo/setup.sh && vhs demo/demo.tape
+```
+
+The demo runs under `NVIM_APPNAME=dotnet-menu-demo`, so it never touches your
+own Neovim config or plugins.
 
 ## License
 
